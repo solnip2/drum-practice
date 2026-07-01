@@ -1,0 +1,11 @@
+{
+  "name": "패드 드럼 기초 연습",
+  "short_name": "패드 드럼",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#203631",
+  "description": "연습용 패드와 바닥 발동작으로 기초부터 고급까지 연습하는 드럼 루틴",
+  "icons": []
+}

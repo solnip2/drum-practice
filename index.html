@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>패드 드럼 기초 연습</title>
+  <meta name="theme-color" content="#203631">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="패드 드럼">
+  <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root {
+      --ink: #17211f;
+      --muted: #61706c;
+      --line: #cbd8d2;
+      --paper: #f7f5ef;
+      --panel: #ffffff;
+      --mint: #d8eee4;
+      --green: #1f8067;
+      --coral: #d96c4e;
+      --blue: #386fa4;
+      --gold: #b88919;
+      --shadow: 0 14px 34px rgba(23, 33, 31, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      background: #203631;
+      color: #f8fff9;
+      padding: 26px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .brand h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 0;
+      color: #d5e7df;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .level-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .level-btn {
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      border-radius: 8px;
+      text-align: left;
+      padding: 14px;
+      cursor: pointer;
+    }
+
+    .level-btn strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 3px;
+    }
+
+    .level-btn span {
+      color: #cfe2da;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .level-btn.active {
+      background: var(--mint);
+      color: #123028;
+      border-color: var(--mint);
+    }
+
+    .level-btn.active span { color: #3d5b52; }
+
+    .side-note {
+      margin-top: auto;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,.18);
+      color: #d5e7df;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    main {
+      padding: 28px;
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .today h2 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      letter-spacing: 0;
+    }
+
+    .today p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .session-box {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(90px, 1fr));
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      min-width: 410px;
+    }
+
+    .metric {
+      padding: 10px;
+      border-radius: 7px;
+      background: #f1f6f4;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .metric strong {
+      font-size: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    section, .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    section {
+      padding: 20px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eef6f2;
+      color: #235445;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      min-height: 40px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .metronome {
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+      padding: 22px 16px;
+      background: #f5faf7;
+      border: 1px solid #d8e6df;
+      border-radius: 8px;
+    }
+
+    .beat-row {
+      display: grid;
+      grid-template-columns: repeat(8, 34px);
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .beat {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #dce6e1;
+      border: 2px solid transparent;
+      transition: transform .08s ease, background .08s ease;
+    }
+
+    .beat.main {
+      border-color: var(--green);
+    }
+
+    .beat.on {
+      background: var(--coral);
+      transform: scale(1.12);
+    }
+
+    .play {
+      border: 0;
+      min-width: 180px;
+      min-height: 50px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--green);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .play.stop {
+      background: #9b3f35;
+    }
+
+    .pattern {
+      display: grid;
+      gap: 12px;
+    }
+
+    .count {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .count div {
+      min-height: 62px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 5px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .count div:last-child { border-right: 0; }
+
+    .count .active {
+      background: #fff3dc;
+      outline: 3px solid rgba(184, 137, 25, .25);
+      outline-offset: -3px;
+    }
+
+    .num {
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .move {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      min-height: 18px;
+    }
+
+    .routine {
+      display: grid;
+      gap: 10px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .check {
+      width: 28px;
+      height: 28px;
+      accent-color: var(--green);
+    }
+
+    .step strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .step span {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .minutes {
+      color: var(--blue);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .tips {
+      display: grid;
+      gap: 12px;
+    }
+
+    .tip {
+      padding: 14px;
+      border-left: 5px solid var(--green);
+      background: #f7fbf9;
+      border-radius: 6px;
+      line-height: 1.55;
+    }
+
+    .tip.warn {
+      border-left-color: var(--coral);
+      background: #fff7f4;
+    }
+
+    .library {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      padding: 16px;
+      box-shadow: none;
+      cursor: pointer;
+    }
+
+    .card.selected {
+      border-color: var(--green);
+      background: #f2fbf6;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 17px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+      padding-bottom: 20px;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        min-height: auto;
+      }
+
+      .level-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .side-note {
+        margin-top: 0;
+      }
+
+      .topbar, .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .session-box {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 18px;
+      }
+
+      .level-list, .controls, .library {
+        grid-template-columns: 1fr;
+      }
+
+      .session-box {
+        grid-template-columns: 1fr;
+      }
+
+      .beat-row {
+        grid-template-columns: repeat(4, 34px);
+      }
+
+      .count {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .count div:nth-child(4) {
+        border-right: 0;
+      }
+
+      .count div:nth-child(n+5) {
+        border-top: 1px solid var(--line);
+      }
+
+      .today h2 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <h1>패드 드럼<br>기초 연습</h1>
+        <p>연습용 패드 하나와 바닥을 밟는 발동작만으로 박자, 손순서, 기본 리듬을 차근차근 익힙니다.</p>
+      </div>
+
+      <div class="level-list" aria-label="난이도 선택">
+        <button class="level-btn active" data-level="beginner">
+          <strong>기초</strong>
+          <span>스틱 잡기, 4분음표, 오른손·왼손 균형</span>
+        </button>
+        <button class="level-btn" data-level="middle">
+          <strong>중급</strong>
+          <span>8비트, 발 카운트, 기본 필인</span>
+        </button>
+        <button class="level-btn" data-level="advanced">
+          <strong>고급</strong>
+          <span>16분음표, 싱코페이션, 체력 루틴</span>
+        </button>
+      </div>
+
+      <div class="side-note">
+        발은 악기가 없어도 괜찮습니다. 오른발은 “쿵”, 왼발은 “찰” 느낌으로 바닥을 살짝 밟으며 몸의 중심을 익히면 됩니다.
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="today">
+          <h2 id="lessonTitle">오늘의 기초 루틴</h2>
+          <p id="lessonIntro">소리를 크게 내기보다 일정하게 치는 것을 먼저 연습합니다. 어깨 힘을 빼고 천천히 시작하세요.</p>
+        </div>
+        <div class="session-box" aria-label="오늘 연습 요약">
+          <div class="metric"><span>권장 시간</span><strong id="totalMinutes">20분</strong></div>
+          <div class="metric"><span>남은 시간</span><strong id="timeLeft">20:00</strong></div>
+          <div class="metric"><span>시작 속도</span><strong id="startTempo">60 BPM</strong></div>
+          <div class="metric"><span>핵심</span><strong id="focusWord">균형</strong></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section>
+          <div class="section-title">
+            <h3>박자 연습기</h3>
+            <span class="pill" id="tempoText">60 BPM</span>
+          </div>
+
+          <div class="controls">
+            <label>BPM
+              <input id="tempo" type="range" min="40" max="140" value="60">
+            </label>
+            <label>박자
+              <select id="meter">
+                <option value="4">4박자</option>
+                <option value="3">3박자</option>
+                <option value="6">6박자</option>
+              </select>
+            </label>
+            <label>소절 표시
+              <input id="bars" type="number" min="1" max="16" value="4">
+            </label>
+            <label>연습 시간
+              <input id="practiceMinutes" type="number" min="1" max="120" value="20">
+            </label>
+            <label>연습 패턴
+              <select id="patternSelect"></select>
+            </label>
+          </div>
+
+          <div class="metronome">
+            <div class="beat-row" id="beatRow"></div>
+            <button class="play" id="playBtn">시작</button>
+          </div>
+
+          <div class="pattern" style="margin-top: 18px;">
+            <div class="section-title">
+              <h3>손과 발 순서</h3>
+              <span class="pill" id="barText">1 / 4 소절</span>
+            </div>
+            <div class="count" id="countGrid"></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-title">
+            <h3>오늘의 순서</h3>
+            <span class="pill">체크하며 진행</span>
+          </div>
+          <div class="routine" id="routine"></div>
+        </section>
+      </div>
+
+      <section>
+        <div class="section-title">
+          <h3>패턴 보관함</h3>
+          <span class="pill">클릭하면 바로 적용</span>
+        </div>
+        <div class="library" id="library"></div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h3>초보자를 위한 기준</h3>
+          <span class="pill">급하게 올리지 않기</span>
+        </div>
+        <div class="tips">
+          <div class="tip">처음 2주는 빠르게 치는 것보다 같은 높이, 같은 간격, 같은 소리를 목표로 합니다.</div>
+          <div class="tip">오른발은 실제 킥드럼처럼 세게 밟지 않아도 됩니다. 발바닥 앞쪽으로 바닥을 가볍게 누르며 박자를 표시하세요.</div>
+          <div class="tip warn">손목, 팔꿈치, 어깨가 아프면 즉시 멈추세요. 통증을 참고 반복하는 연습은 실력이 아니라 나쁜 습관을 키웁니다.</div>
+        </div>
+      </section>
+
+      <div class="footer-note">
+        권장 사용법: 하루 15~25분, 같은 루틴을 3일 반복한 뒤 BPM을 4~6 정도만 올리세요. 흔들리면 속도를 다시 낮추는 것이 가장 빠른 길입니다.
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const lessons = {
+      beginner: {
+        title: "오늘의 기초 루틴",
+        intro: "소리를 크게 내기보다 일정하게 치는 것을 먼저 연습합니다. 어깨 힘을 빼고 천천히 시작하세요.",
+        total: "20분",
+        tempo: 60,
+        focus: "균형",
+        steps: [
+          ["몸 풀기", "손목을 부드럽게 돌리고 패드 위에서 작은 높이로 1분씩 양손을 움직입니다.", "3분"],
+          ["4분음표", "오른손만 1 2 3 4, 왼손만 1 2 3 4를 각각 일정하게 칩니다.", "5분"],
+          ["교대 치기", "R L R L 순서로 치고, 오른발은 1과 3에 바닥을 밟습니다.", "7분"],
+          ["마무리", "속도를 낮춰서 가장 편한 소리와 자세로 다시 한 번 반복합니다.", "5분"]
+        ]
+      },
+      middle: {
+        title: "8비트 안정 루틴",
+        intro: "손은 8분음표를 유지하고, 오른발을 정해진 위치에 넣는 연습을 합니다.",
+        total: "25분",
+        tempo: 72,
+        focus: "분리",
+        steps: [
+          ["8분음표", "오른손으로 1 & 2 & 3 & 4 &를 고르게 칩니다.", "6분"],
+          ["백비트", "왼손은 2와 4에만 넣고 손의 높이를 낮게 유지합니다.", "7분"],
+          ["오른발", "오른발을 1과 3에 밟으며 손이 흔들리지 않는지 확인합니다.", "7분"],
+          ["짧은 필인", "마지막 한 박만 R L R L로 채운 뒤 다시 기본 리듬으로 돌아옵니다.", "5분"]
+        ]
+      },
+      advanced: {
+        title: "16분음표 확장 루틴",
+        intro: "작은 움직임으로 오래 버티는 힘과 리듬 위치를 바꾸는 감각을 함께 키웁니다.",
+        total: "30분",
+        tempo: 84,
+        focus: "정교함",
+        steps: [
+          ["싱글 스트로크", "R L R L을 16분음표로 작고 균일하게 연주합니다.", "8분"],
+          ["악센트", "각 박의 첫 음만 살짝 강조하고 나머지는 낮게 칩니다.", "7분"],
+          ["싱코페이션", "오른발을 1, 2&, 3, 4&에 밟으며 손의 흐름을 유지합니다.", "8분"],
+          ["회복 반복", "BPM을 10 낮추고 정확도만 보며 편안하게 마무리합니다.", "7분"]
+        ]
+      }
+    };
+
+    const patterns = [
+      {
+        id: "quarter",
+        level: "beginner",
+        name: "4분음표 교대",
+        desc: "R L R L, 오른발은 1과 3",
+        moves: ["R + 발", "L", "R + 발", "L"],
+        counts: ["1", "2", "3", "4"],
+        meter: 4
+      },
+      {
+        id: "eight",
+        level: "middle",
+        name: "기본 8비트",
+        desc: "오른손 8분, 왼손 2와 4, 발 1과 3",
+        moves: ["R + 발", "R", "R + L", "R", "R + 발", "R", "R + L", "R"],
+        counts: ["1", "&", "2", "&", "3", "&", "4", "&"],
+        meter: 4
+      },
+      {
+        id: "fill",
+        level: "middle",
+        name: "한 박 필인",
+        desc: "앞은 안정, 마지막 박은 R L R L",
+        moves: ["R + 발", "R", "R + L", "R", "R + 발", "R", "R L", "R L"],
+        counts: ["1", "&", "2", "&", "3", "&", "4", "&"],
+        meter: 4
+      },
+      {
+        id: "sixteen",
+        level: "advanced",
+        name: "16분 싱글",
+        desc: "작은 움직임으로 R L R L 반복",
+        moves: ["R + 발", "L", "R", "L", "R", "L", "R", "L"],
+        counts: ["1", "e", "&", "a", "2", "e", "&", "a"],
+        meter: 4
+      },
+      {
+        id: "sync",
+        level: "advanced",
+        name: "싱코페이션 발",
+        desc: "오른발 위치를 바꿔도 손은 흔들리지 않기",
+        moves: ["R + 발", "R", "R + L", "R + 발", "R", "R", "R + L", "R + 발"],
+        counts: ["1", "&", "2", "&", "3", "&", "4", "&"],
+        meter: 4
+      }
+    ];
+
+    const state = {
+      level: "beginner",
+      patternId: "quarter",
+      playing: false,
+      beat: 0,
+      bar: 1,
+      timer: null,
+      durationTimer: null,
+      remainingSeconds: 20 * 60,
+      audio: null
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const tempo = $("tempo");
+    const meter = $("meter");
+    const bars = $("bars");
+    const practiceMinutes = $("practiceMinutes");
+    const patternSelect = $("patternSelect");
+    const beatRow = $("beatRow");
+    const countGrid = $("countGrid");
+    const routine = $("routine");
+    const library = $("library");
+    const playBtn = $("playBtn");
+
+    function currentPattern() {
+      return patterns.find((pattern) => pattern.id === state.patternId) || patterns[0];
+    }
+
+    function minutesFromText(text) {
+      return Number(String(text).replace(/[^0-9]/g, "")) || 20;
+    }
+
+    function secondsFromPracticeMinutes() {
+      return Math.max(1, Number(practiceMinutes.value) || 1) * 60;
+    }
+
+    function formatTime(totalSeconds) {
+      const safeSeconds = Math.max(0, totalSeconds);
+      const minutes = Math.floor(safeSeconds / 60);
+      const seconds = safeSeconds % 60;
+      return `${minutes}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function renderTimeLeft() {
+      $("timeLeft").textContent = formatTime(state.remainingSeconds);
+    }
+
+    function renderLevel() {
+      const lesson = lessons[state.level];
+      $("lessonTitle").textContent = lesson.title;
+      $("lessonIntro").textContent = lesson.intro;
+      $("totalMinutes").textContent = lesson.total;
+      $("startTempo").textContent = `${lesson.tempo} BPM`;
+      $("focusWord").textContent = lesson.focus;
+      tempo.value = lesson.tempo;
+      practiceMinutes.value = minutesFromText(lesson.total);
+      state.remainingSeconds = secondsFromPracticeMinutes();
+      $("tempoText").textContent = `${lesson.tempo} BPM`;
+      renderTimeLeft();
+
+      document.querySelectorAll(".level-btn").forEach((button) => {
+        button.classList.toggle("active", button.dataset.level === state.level);
+      });
+
+      routine.innerHTML = "";
+      lesson.steps.forEach((step, index) => {
+        const item = document.createElement("label");
+        item.className = "step";
+        item.innerHTML = `
+          <input class="check" type="checkbox" ${index === 0 ? "checked" : ""}>
+          <span><strong>${step[0]}</strong><span>${step[1]}</span></span>
+          <span class="minutes">${step[2]}</span>
+        `;
+        routine.appendChild(item);
+      });
+
+      const firstPattern = patterns.find((pattern) => pattern.level === state.level);
+      if (firstPattern) state.patternId = firstPattern.id;
+      renderPatternOptions();
+      renderLibrary();
+      renderPattern();
+    }
+
+    function renderPatternOptions() {
+      patternSelect.innerHTML = "";
+      patterns.forEach((pattern) => {
+        const option = document.createElement("option");
+        option.value = pattern.id;
+        option.textContent = pattern.name;
+        patternSelect.appendChild(option);
+      });
+      patternSelect.value = state.patternId;
+    }
+
+    function renderLibrary() {
+      library.innerHTML = "";
+      patterns.forEach((pattern) => {
+        const card = document.createElement("button");
+        card.className = `card ${pattern.id === state.patternId ? "selected" : ""}`;
+        card.type = "button";
+        card.innerHTML = `<strong>${pattern.name}</strong><p>${pattern.desc}</p>`;
+        card.addEventListener("click", () => {
+          state.patternId = pattern.id;
+          patternSelect.value = pattern.id;
+          meter.value = pattern.meter;
+          renderPattern();
+          renderLibrary();
+        });
+        library.appendChild(card);
+      });
+    }
+
+    function renderBeats() {
+      beatRow.innerHTML = "";
+      const count = Number(meter.value) === 6 ? 6 : Number(meter.value);
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement("div");
+        dot.className = `beat ${i === 0 ? "main" : ""} ${i === state.beat ? "on" : ""}`;
+        beatRow.appendChild(dot);
+      }
+    }
+
+    function renderPattern() {
+      const pattern = currentPattern();
+      $("barText").textContent = `${state.bar} / ${bars.value} 소절`;
+      countGrid.innerHTML = "";
+      countGrid.style.gridTemplateColumns = `repeat(${pattern.counts.length}, minmax(0, 1fr))`;
+      pattern.counts.forEach((count, index) => {
+        const cell = document.createElement("div");
+        const activeIndex = Math.floor(state.beat * (pattern.counts.length / Number(meter.value)));
+        if (index === activeIndex) cell.className = "active";
+        cell.innerHTML = `<span class="num">${count}</span><span class="move">${pattern.moves[index]}</span>`;
+        countGrid.appendChild(cell);
+      });
+      renderBeats();
+    }
+
+    function beep(isAccent) {
+      if (!state.audio) state.audio = new AudioContext();
+      const oscillator = state.audio.createOscillator();
+      const gain = state.audio.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = isAccent ? 920 : 620;
+      gain.gain.setValueAtTime(isAccent ? 0.18 : 0.11, state.audio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, state.audio.currentTime + 0.08);
+      oscillator.connect(gain).connect(state.audio.destination);
+      oscillator.start();
+      oscillator.stop(state.audio.currentTime + 0.09);
+    }
+
+    function tick() {
+      const beatCount = Number(meter.value);
+      beep(state.beat === 0);
+      renderPattern();
+      state.beat += 1;
+      if (state.beat >= beatCount) {
+        state.beat = 0;
+        state.bar += 1;
+      }
+      if (state.bar > Number(bars.value)) {
+        state.bar = 1;
+      }
+    }
+
+    function start() {
+      state.playing = true;
+      state.beat = 0;
+      state.bar = 1;
+      state.remainingSeconds = secondsFromPracticeMinutes();
+      renderTimeLeft();
+      playBtn.textContent = "정지";
+      playBtn.classList.add("stop");
+      tick();
+      state.timer = setInterval(tick, 60000 / Number(tempo.value));
+      state.durationTimer = setInterval(() => {
+        state.remainingSeconds -= 1;
+        renderTimeLeft();
+        if (state.remainingSeconds <= 0) {
+          stop(true);
+        }
+      }, 1000);
+    }
+
+    function stop(completed = false) {
+      state.playing = false;
+      clearInterval(state.timer);
+      clearInterval(state.durationTimer);
+      state.timer = null;
+      state.durationTimer = null;
+      state.beat = 0;
+      state.bar = 1;
+      if (!completed) {
+        state.remainingSeconds = secondsFromPracticeMinutes();
+        renderTimeLeft();
+      }
+      playBtn.textContent = completed ? "다시 시작" : "시작";
+      playBtn.classList.remove("stop");
+      renderPattern();
+    }
+
+    document.querySelectorAll(".level-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (state.playing) stop();
+        state.level = button.dataset.level;
+        renderLevel();
+      });
+    });
+
+    tempo.addEventListener("input", () => {
+      $("tempoText").textContent = `${tempo.value} BPM`;
+      if (state.playing) {
+        clearInterval(state.timer);
+        state.timer = setInterval(tick, 60000 / Number(tempo.value));
+      }
+    });
+
+    [meter, bars].forEach((input) => input.addEventListener("change", renderPattern));
+
+    practiceMinutes.addEventListener("change", () => {
+      if (!state.playing) {
+        state.remainingSeconds = secondsFromPracticeMinutes();
+        renderTimeLeft();
+      }
+    });
+
+    patternSelect.addEventListener("change", () => {
+      state.patternId = patternSelect.value;
+      meter.value = currentPattern().meter;
+      renderPattern();
+      renderLibrary();
+    });
+
+    playBtn.addEventListener("click", () => {
+      state.playing ? stop() : start();
+    });
+
+    renderLevel();
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
