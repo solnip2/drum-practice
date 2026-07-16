@@ -1,4 +1,4 @@
-const CACHE_NAME = "pad-drum-practice-v2";
+const CACHE_NAME = "pad-drum-practice-v3";
 const FILES = [
   "./",
   "./index.html",

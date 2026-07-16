@@ -706,7 +706,8 @@
       timer: null,
       durationTimer: null,
       remainingSeconds: 20 * 60,
-      audio: null
+      audio: null,
+      clickSounds: null
     };
 
     const $ = (id) => document.getElementById(id);
@@ -834,37 +835,92 @@
       renderBeats();
     }
 
-    async function ensureAudio() {
-      if (!state.audio) {
-        const AudioEngine = window.AudioContext || window.webkitAudioContext;
-        if (!AudioEngine) return false;
-        state.audio = new AudioEngine();
+    function makeClickSound(frequency, volume) {
+      const sampleRate = 44100;
+      const duration = 0.075;
+      const samples = Math.floor(sampleRate * duration);
+      const buffer = new ArrayBuffer(44 + samples * 2);
+      const view = new DataView(buffer);
+      const writeString = (offset, text) => {
+        for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i));
+      };
+
+      writeString(0, "RIFF");
+      view.setUint32(4, 36 + samples * 2, true);
+      writeString(8, "WAVE");
+      writeString(12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(36, "data");
+      view.setUint32(40, samples * 2, true);
+
+      for (let i = 0; i < samples; i++) {
+        const fade = 1 - i / samples;
+        const sample = Math.sin(2 * Math.PI * frequency * i / sampleRate) * volume * fade;
+        view.setInt16(44 + i * 2, sample * 32767, true);
       }
 
-      if (state.audio.state === "suspended") {
+      let binary = "";
+      new Uint8Array(buffer).forEach((byte) => binary += String.fromCharCode(byte));
+      const audio = new Audio(`data:audio/wav;base64,${btoa(binary)}`);
+      audio.preload = "auto";
+      return audio;
+    }
+
+    function ensureClickSounds() {
+      if (!state.clickSounds) {
+        state.clickSounds = {
+          accent: makeClickSound(920, 0.75),
+          normal: makeClickSound(620, 0.55)
+        };
+      }
+      return state.clickSounds;
+    }
+
+    async function ensureAudio() {
+      const clicks = ensureClickSounds();
+      if (!state.audio) {
+        const AudioEngine = window.AudioContext || window.webkitAudioContext;
+        if (AudioEngine) state.audio = new AudioEngine();
+      }
+
+      if (state.audio && state.audio.state === "suspended") {
         await state.audio.resume();
       }
 
-      const gain = state.audio.createGain();
-      const oscillator = state.audio.createOscillator();
-      gain.gain.value = 0;
-      oscillator.connect(gain).connect(state.audio.destination);
-      oscillator.start();
-      oscillator.stop(state.audio.currentTime + 0.01);
+      try {
+        clicks.normal.currentTime = 0;
+        await clicks.normal.play();
+        clicks.normal.pause();
+        clicks.normal.currentTime = 0;
+      } catch (error) {
+        if (!state.audio || state.audio.state !== "running") return false;
+      }
+
       return true;
     }
 
     function beep(isAccent) {
-      if (!state.audio || state.audio.state !== "running") return;
-      const oscillator = state.audio.createOscillator();
-      const gain = state.audio.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = isAccent ? 920 : 620;
-      gain.gain.setValueAtTime(isAccent ? 0.18 : 0.11, state.audio.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, state.audio.currentTime + 0.08);
-      oscillator.connect(gain).connect(state.audio.destination);
-      oscillator.start();
-      oscillator.stop(state.audio.currentTime + 0.09);
+      const clicks = ensureClickSounds();
+      const sound = isAccent ? clicks.accent : clicks.normal;
+      sound.currentTime = 0;
+      sound.play().catch(() => {
+        if (!state.audio || state.audio.state !== "running") return;
+        const oscillator = state.audio.createOscillator();
+        const gain = state.audio.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = isAccent ? 920 : 620;
+        gain.gain.setValueAtTime(isAccent ? 0.18 : 0.11, state.audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, state.audio.currentTime + 0.08);
+        oscillator.connect(gain).connect(state.audio.destination);
+        oscillator.start();
+        oscillator.stop(state.audio.currentTime + 0.09);
+      });
     }
 
     function tick() {
